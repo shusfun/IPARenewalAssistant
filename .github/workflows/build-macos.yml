@@ -1,0 +1,83 @@
+name: Build macOS
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-macos-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-arm64:
+    name: Native Apple Silicon package
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show runner architecture
+        run: |
+          uname -m
+          sysctl -n machdep.cpu.brand_string
+          if [ "$(uname -m)" != "arm64" ]; then
+            echo "expected Apple Silicon runner" >&2
+            exit 1
+          fi
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+          cache-dependency-path: go.sum
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install OpenSSL 3
+        run: brew install openssl@3
+
+      - name: Go tests
+        env:
+          GOTOOLCHAIN: go1.26.1
+        run: |
+          go test -count=1 ./...
+          go vet ./...
+
+      - name: Frontend tests
+        working-directory: frontend
+        run: |
+          npm ci
+          npm test
+
+      - name: Build arm64 app
+        env:
+          GOTOOLCHAIN: go1.26.1
+        run: ./scripts/build-app.sh arm64
+
+      - name: Verify thin arm64 bundle
+        run: |
+          app="build/bin/darwin-arm64/续签助手.app"
+          res="$app/Contents/Resources"
+          for file in "$app/Contents/MacOS/续签助手" "$res/altsign-cli" "$res/libssl.3.dylib" "$res/libcrypto.3.dylib"; do
+            archs="$(lipo -archs "$file")"
+            echo "$file $archs"
+            [ "$archs" = "arm64" ]
+          done
+          if otool -L "$res/altsign-cli" | grep -E '/usr/local/opt/openssl|/opt/homebrew/opt/openssl|/Cellar/openssl'; then
+            echo "helper still links Homebrew OpenSSL" >&2
+            otool -L "$res/altsign-cli"
+            exit 1
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: IPARenewalAssistant-macos-arm64
+          path: build/bin/darwin-arm64/IPARenewalAssistant-v0.1.0-macos-arm64.zip
+          if-no-files-found: error

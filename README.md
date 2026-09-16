@@ -68,7 +68,7 @@ go test -run TestCurrentIPARealAcceptance -v -count=1
 
 ```bash
 ./scripts/build-app.sh amd64    # Intel：build/bin/darwin-amd64/续签助手.app
-./scripts/build-app.sh arm64    # Apple Silicon：在 M 芯片 Mac 上运行
+./scripts/build-app.sh arm64    # Apple Silicon：在 M 芯片 Mac 或 GitHub macos-15 runner 上运行
 ```
 
 产物目录互不覆盖。每个架构的 zip 在同目录下，例如 `IPARenewalAssistant-v0.1.0-macos-amd64.zip`。两个架构都打好、并在 M 芯片真机完成验收之前，不会发布 GitHub Release。
