@@ -43,18 +43,19 @@ jobs:
       - name: Install OpenSSL 3
         run: brew install openssl@3
 
+      - name: Frontend tests and build
+        working-directory: frontend
+        run: |
+          npm ci
+          npm test
+          npm run build
+
       - name: Go tests
         env:
           GOTOOLCHAIN: go1.26.1
         run: |
           go test -count=1 ./...
           go vet ./...
-
-      - name: Frontend tests
-        working-directory: frontend
-        run: |
-          npm ci
-          npm test
 
       - name: Build arm64 app
         env:
