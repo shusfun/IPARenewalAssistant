@@ -1,0 +1,8 @@
+{
+  "name": "ipa-renewal-assistant",
+  "private": true,
+  "packageManager": "pnpm@10.15.0",
+  "scripts": {
+    "build:frontend": "npm --prefix frontend run build"
+  }
+}

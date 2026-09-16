@@ -1,0 +1,5 @@
+build/bin
+node_modules
+frontend/dist
+.tools
+native/altsign-cli/altsign-cli
