@@ -14,6 +14,9 @@ func TestEphemeralLoginIdentityCanCodesign(t *testing.T) {
 	if runtime.GOOS != "darwin" {
 		t.Skip("codesign recipe is macOS-only")
 	}
+	if os.Getenv("CI") != "" {
+		t.Skip("login keychain codesign waits for UI on GitHub-hosted runners")
+	}
 	var opensslCandidates []string
 	if prefix := os.Getenv("OPENSSL_PREFIX"); prefix != "" {
 		opensslCandidates = append(opensslCandidates, filepath.Join(prefix, "bin", "openssl"))
