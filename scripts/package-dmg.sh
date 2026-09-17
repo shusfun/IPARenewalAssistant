@@ -28,7 +28,19 @@ ln -s /Applications "$STAGE/Applications"
 
 mkdir -p "$(dirname "$DMG")"
 rm -f "$DMG"
-hdiutil create -volname "$VOLNAME" -srcfolder "$STAGE" -ov -format UDZO "$DMG" >/dev/null
+sync
+attempt=1
+while true; do
+  if hdiutil create -volname "$VOLNAME" -srcfolder "$STAGE" -ov -format UDZO "$DMG" >/dev/null; then
+    break
+  fi
+  if (( attempt >= 6 )); then
+    print -u2 -- "hdiutil create failed after ${attempt} attempts"
+    exit 1
+  fi
+  sleep 3
+  attempt=$((attempt + 1))
+done
 
 hdiutil attach -nobrowse -readonly -mountpoint "$MOUNT" "$DMG" >/dev/null
 mounted=1
