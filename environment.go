@@ -13,8 +13,6 @@ import (
 	"runtime"
 	"sort"
 	"strings"
-
-	"howett.net/plist"
 )
 
 type SigningIdentity struct {
@@ -65,34 +63,6 @@ func (s *Service) checkEnvironment(ctx context.Context) Environment {
 	}
 	status.Ready = status.CanSign
 	return Environment{Status: status}
-}
-
-func checkVolumeIdentity() error {
-	info, err := os.Stat(expectedVolume)
-	if err != nil || !info.IsDir() {
-		return fmt.Errorf("980Pro 未连接，只能查看历史状态")
-	}
-	cmd := RealCommandRunner{}
-	result, err := cmd.Run(context.Background(), CommandSpec{Name: "diskutil", Args: []string{"info", "-plist", expectedVolume}})
-	if err != nil {
-		return fmt.Errorf("无法核验 980Pro 身份")
-	}
-	var data map[string]any
-	if _, err := plist.Unmarshal(result.Stdout, &data); err != nil {
-		return fmt.Errorf("无法读取 980Pro 卷信息")
-	}
-	uuid, _ := data["VolumeUUID"].(string)
-	if !strings.EqualFold(uuid, expectedVolumeUUID) {
-		return fmt.Errorf("980Pro 卷身份不符，只能查看历史状态")
-	}
-	probe, err := os.CreateTemp(expectedVolume, ".iparenewal-write-check-*")
-	if err != nil {
-		return fmt.Errorf("980Pro 当前不可写，只能查看历史状态")
-	}
-	name := probe.Name()
-	_ = probe.Close()
-	_ = os.Remove(name)
-	return nil
 }
 
 func (s *Service) findSigningIdentities(ctx context.Context) ([]SigningIdentity, error) {

@@ -589,7 +589,7 @@ function App() {
 
       {notice && <div className={`top-notice ${notice.level}`} role="status"><div><strong>{notice.title}</strong><span>{notice.message}</span>{notice.code && <small>错误码：{notice.code}</small>}</div><button className="icon-button compact" onClick={() => setNotice(null)} aria-label="关闭通知"><X size={16} /></button></div>}
 
-      {!environment.volumeAvailable && <div className="storage-warning"><HardDrive size={17} /><span>{environment.volumeIssue || '980Pro 不可用，只显示历史状态'}</span></div>}
+      {!environment.volumeAvailable && <div className="storage-warning"><HardDrive size={17} /><span>{environment.volumeIssue || '应用数据目录不可用，只显示历史状态'}</span></div>}
       {environment.platformSupported === false && environment.platformIssue && <div className="storage-warning platform-warning"><AlertCircle size={17} /><span>{environment.platformIssue}，签名、安装和续签已禁用</span></div>}
 
       <div className="workspace">

@@ -2,9 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-EXPECTED_VOLUME="/Volumes/980Pro"
-EXPECTED_VOLUME_UUID="26CAAB44-4990-4003-9F28-D4FB791D33D1"
-CACHE_ROOT="/Volumes/980Pro/Cache/IPARenewalAssistant"
+CACHE_ROOT="${IPARENEWAL_CACHE:-$HOME/Library/Caches/com.shus.iparenewalassistant}"
 TARGET_ARCH="$(uname -m)"
 export TARGET_ARCH
 OPENSSL_PREFIX="$("$ROOT/scripts/openssl-prefix.sh")"
@@ -14,19 +12,6 @@ fail() {
   print -u2 -- "$*"
   exit 1
 }
-
-if [[ ! -d "$EXPECTED_VOLUME" ]]; then
-  fail "980Pro 未连接，开发入口不会改用内置盘。"
-fi
-
-volume_plist="$(diskutil info -plist "$EXPECTED_VOLUME" 2>/dev/null)" || fail "无法核验 980Pro 身份。"
-volume_uuid="$(print -r -- "$volume_plist" | plutil -extract VolumeUUID raw - 2>/dev/null)" || fail "无法读取 980Pro 卷 UUID。"
-if [[ "${volume_uuid:u}" != "${EXPECTED_VOLUME_UUID:u}" ]]; then
-  fail "980Pro 卷身份不符，开发入口已停止。"
-fi
-
-probe="$(mktemp "$EXPECTED_VOLUME/.iparenewal-dev-write-XXXXXX")" || fail "980Pro 当前不可写，开发入口已停止。"
-rm -f "$probe"
 
 command -v clang >/dev/null || fail "缺少 clang，无法构建签名组件。"
 command -v go >/dev/null || fail "缺少 Go 工具链。"

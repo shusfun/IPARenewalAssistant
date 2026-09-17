@@ -68,12 +68,12 @@ func NewService(paths Paths, runner CommandRunner, events EventSink) (*Service, 
 	if events == nil {
 		events = noopEventSink{}
 	}
-	return &Service{paths: paths, store: store, runner: runner, events: events, now: time.Now, storageCheck: checkVolumeIdentity, apple: newAppleBackend()}, nil
+	return &Service{paths: paths, store: store, runner: runner, events: events, now: time.Now, storageCheck: func() error { return checkStorage(paths) }, apple: newAppleBackend()}, nil
 }
 
 func (s *Service) ensureExternalStorage() error {
 	if err := s.storageCheck(); err != nil {
-		return &UserError{Code: "volume_unavailable", Message: err.Error(), Recovery: "请连接正确的 980Pro 后点击刷新。应用不会改用内置磁盘。"}
+		return &UserError{Code: "storage_unavailable", Message: err.Error(), Recovery: "请检查应用数据目录的写入权限。"}
 	}
 	for _, dir := range []string{
 		filepath.Join(s.paths.Library, "originals"),
@@ -82,7 +82,7 @@ func (s *Service) ensureExternalStorage() error {
 		s.paths.Cache,
 	} {
 		if err := os.MkdirAll(dir, 0o700); err != nil {
-			return &UserError{Code: "storage_create_failed", Message: "无法创建 980Pro 上的应用目录", Recovery: "请检查卷的写入权限。"}
+			return &UserError{Code: "storage_create_failed", Message: "无法创建应用目录", Recovery: "请检查应用数据目录的写入权限。"}
 		}
 	}
 	return nil

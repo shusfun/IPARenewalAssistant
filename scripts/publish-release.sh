@@ -5,7 +5,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-VERSION="${VERSION:-1.0.0}"
+VERSION="${VERSION:-1.0.1}"
 TAG="v${VERSION}"
 REPO="${GITHUB_REPO:-shusfun/IPARenewalAssistant}"
 APP_NAME="续签助手.app"
@@ -69,9 +69,7 @@ cat > "$NOTES" <<EOF
 - \`IPARenewalAssistant-${TAG}-macos-amd64.dmg\`：Intel
 - \`IPARenewalAssistant-${TAG}-macos-arm64.dmg\`：Apple Silicon
 
-仍需连接 UUID 匹配的 980Pro。未连接时只能查看历史，这与芯片无关。
-
-ARM64 包已在 M 芯片真机完成登录、钥匙串授权、证书私钥复用、签名和设备安装验收。
+ARM64 包在 GitHub Actions macos-15（Apple M1）上原生编译。登录、钥匙串、签名和设备安装请在本机自行验收。
 EOF
 
 command -v gh >/dev/null || fail "缺少 gh，无法发版。"

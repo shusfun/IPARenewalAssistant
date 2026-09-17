@@ -25,6 +25,65 @@ func TestProductionDoesNotReferenceRemovedCLIs(t *testing.T) {
 	}
 }
 
+func TestProductionDoesNotBind980ProVolume(t *testing.T) {
+	files := []string{
+		"config.go",
+		"environment.go",
+		"service.go",
+		filepath.Join("scripts", "dev.sh"),
+		filepath.Join("frontend", "src", "App.tsx"),
+	}
+	for _, name := range files {
+		data, err := os.ReadFile(name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		text := string(data)
+		if strings.Contains(text, "26CAAB44-4990-4003-9F28-D4FB791D33D1") || strings.Contains(text, "/Volumes/980Pro") {
+			t.Fatalf("%s still binds the 980Pro volume", name)
+		}
+	}
+}
+
+func TestDefaultPathsUseUserLibrary(t *testing.T) {
+	t.Setenv("IPARENEWAL_LIBRARY", "")
+	t.Setenv("IPARENEWAL_CACHE", "")
+	paths, err := defaultPaths()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(paths.Library, "/Volumes/980Pro") || strings.Contains(paths.Cache, "/Volumes/980Pro") {
+		t.Fatalf("paths still on 980Pro: %+v", paths)
+	}
+	if !strings.Contains(paths.Library, "Application Support") {
+		t.Fatalf("library = %q", paths.Library)
+	}
+	if !strings.Contains(paths.Cache, "Caches") {
+		t.Fatalf("cache = %q", paths.Cache)
+	}
+}
+
+func TestDefaultPathsHonorLibraryAndCacheEnv(t *testing.T) {
+	library := t.TempDir()
+	cache := t.TempDir()
+	t.Setenv("IPARENEWAL_LIBRARY", library)
+	t.Setenv("IPARENEWAL_CACHE", cache)
+	paths, err := defaultPaths()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if paths.Library != library || paths.Cache != cache {
+		t.Fatalf("paths = %+v", paths)
+	}
+}
+
+func TestCheckStorageAcceptsWritableUserDirs(t *testing.T) {
+	paths := Paths{Library: t.TempDir(), Cache: t.TempDir()}
+	if err := checkStorage(paths); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestBuildScriptsDoNotDefaultToIntelOpenSSL(t *testing.T) {
 	files := []string{
 		filepath.Join("native", "altsign-cli", "build.sh"),

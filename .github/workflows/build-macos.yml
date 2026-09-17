@@ -60,6 +60,7 @@ jobs:
       - name: Build arm64 app
         env:
           GOTOOLCHAIN: go1.26.1
+          VERSION: "1.0.1"
         run: ./scripts/build-app.sh arm64
 
       - name: Verify thin arm64 bundle
@@ -80,5 +81,5 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: IPARenewalAssistant-macos-arm64
-          path: build/bin/darwin-arm64/IPARenewalAssistant-v1.0.0-macos-arm64.dmg
+          path: build/bin/darwin-arm64/IPARenewalAssistant-v1.0.1-macos-arm64.dmg
           if-no-files-found: error
