@@ -80,5 +80,5 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: IPARenewalAssistant-macos-arm64
-          path: build/bin/darwin-arm64/IPARenewalAssistant-v0.1.0-macos-arm64.zip
+          path: build/bin/darwin-arm64/IPARenewalAssistant-v1.0.0-macos-arm64.dmg
           if-no-files-found: error

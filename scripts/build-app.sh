@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-VERSION="${VERSION:-0.1.0}"
+VERSION="${VERSION:-1.0.0}"
 APP_NAME="续签助手.app"
 
 fail() {
@@ -106,10 +106,9 @@ if [[ "$main_arch" != "$TARGET_ARCH" ]]; then
   fail "主程序架构是 ${main_arch}，需要薄架构 ${TARGET_ARCH}"
 fi
 
-ZIP_NAME="IPARenewalAssistant-v${VERSION}-macos-${GOARCH}.zip"
-ZIP_PATH="$ARCH_DIR/$ZIP_NAME"
-rm -f "$ZIP_PATH"
-COPYFILE_DISABLE=1 ditto -c -k --keepParent --norsrc --noextattr --noqtn "$APP" "$ZIP_PATH"
+DMG_NAME="IPARenewalAssistant-v${VERSION}-macos-${GOARCH}.dmg"
+DMG_PATH="$ARCH_DIR/$DMG_NAME"
+"$ROOT/scripts/package-dmg.sh" "$APP" "$DMG_PATH"
 print -- "安装包：$APP"
-print -- "Zip：$ZIP_PATH"
+print -- "DMG：$DMG_PATH"
 print -- "架构：$TARGET_ARCH OpenSSL：$OPENSSL_PREFIX"
